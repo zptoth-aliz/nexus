@@ -589,7 +589,7 @@
   PLBPORT=`kubectl describe service nexus-service --cluster=$PRODUCTION | grep -m 1 "Port" | awk ' {print $3} '`
 
 
-### Displaying staging deployment summary ###
+### Displaying production deployment summary ###
 
   echo -e ${GREEN}
   echo -e "### Readyness probe - Waiting for Nexus Repository Manager to come up ###"
