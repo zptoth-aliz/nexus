@@ -1,0 +1,58 @@
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: nexus-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nexus
+  minReadySeconds: 0
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: nexus
+    spec:
+      containers:
+      - name: nexus-pod
+        image: gcr.io/aliz-nexus/nexus3-custom:latest
+        ports:
+        - containerPort: 8081
+        volumeMounts:
+        - mountPath: "/nexus-data"
+          name: nexus-data
+      volumes:
+        - name: nexus-data
+          persistentVolumeClaim:
+            claimName: nexus-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nexus-service
+  namespace: default
+spec:
+  type: LoadBalancer
+  selector:
+    app: nexus
+  ports:
+  - port: 80
+    targetPort: 8081
+    protocol: TCP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nexus-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 30Gi

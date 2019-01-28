@@ -1,0 +1,73 @@
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: nexus-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nexus
+  minReadySeconds: 30
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 0
+  template:
+    metadata:
+      labels:
+        app: nexus
+    spec:
+      containers:
+      - name: nexus-pod
+        image: gcr.io/aliz-nexus/nexus3-custom:3.15.0
+        ports:
+        - containerPort: 8081
+        volumeMounts:
+        - mountPath: "/nexus-data"
+          name: nexus-data
+      volumes:
+        - name: nexus-data
+          persistentVolumeClaim:
+            claimName: fileserver-claim
+            readOnly: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nexus-service
+  namespace: default
+spec:
+  type: LoadBalancer
+  selector:
+    app: nexus
+  ports:
+  - port: 80
+    targetPort: 8081
+    protocol: TCP
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: fileserver
+spec:
+  capacity:
+    storage: 1T
+  accessModes:
+  - ReadWriteOnce
+  nfs:
+    path: /nexus
+    server: <<< NFS-SERVER-IP >>>
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fileserver-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 30Gi
