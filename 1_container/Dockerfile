@@ -1,4 +1,4 @@
-# Sonatype Nexus Repository Manager 3 with Nexus Blobstore Google Cloud plugin v1.0
+### Sonatype Nexus Repository Manager 3 with Nexus Blobstore Google Cloud plugin v1.0 ###
 
 ### Setting version tag ###
 
